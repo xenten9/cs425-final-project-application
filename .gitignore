@@ -1,1 +1,4 @@
-__pycache__/constants.cpython-311.pyc
+__pycache__/
+.venv/
+.vscode/*
+!.vscode/launch.json

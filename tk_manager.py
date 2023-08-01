@@ -19,6 +19,12 @@ class Tk_Manager:
     def get_frame(self, frame_name: str) -> tk.Frame:
         return self._frames[frame_name]
 
+    def destroy_frame(self, frame_name: str) -> None:
+        if self._current_frame == frame_name:
+            raise ValueError(f"Can not destroy active frame <{frame_name}>.")
+        if frame_name in self._frames:
+            del self._frames[frame_name]
+
     def pack(self, frame_name: str):
         if self._current_frame:  # Unpack active frame
             self._current_frame.pack_forget()

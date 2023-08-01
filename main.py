@@ -20,7 +20,6 @@ ACTIVE_ATTRIBUTES: tuple[list[tk.BooleanVar]] = (
 CONDITIONALS: list[
     tuple[
         tk.StringVar,  # Operand 1 (table_name or custom)
-        tk.StringVar,  # Operand 1 optional custom
         tk.StringVar,  # Operator
         tk.StringVar,  # Operand 2 (table_name or custom)
         tk.StringVar,  # Operand 2 optional custom
@@ -204,7 +203,6 @@ def create_conditional_creator(number_of_tables: int) -> None:
 
     for i in range(10):
         operand_1 = tk.StringVar(MANAGER.root, value="")
-        custom_1 = tk.StringVar(MANAGER.root, value="")
         operator = tk.StringVar(MANAGER.root, value="=")
         operand_2 = tk.StringVar(MANAGER.root, value="")
         custom_2 = tk.StringVar(MANAGER.root, value="")
@@ -212,27 +210,17 @@ def create_conditional_creator(number_of_tables: int) -> None:
         CONDITIONALS.append(
             (
                 operand_1,
-                custom_1,
+                # custom_1,
                 operator,
                 operand_2,
                 custom_2,
                 logical_join,
             )
         )
-
-        # Operand 1
-        # widget_custom_1 = tk.Entry(
-        #     conditional_grid, textvariable=custom_1, state="disabled", **FONT_SMALL
-        # )
-        # widget_custom_1.grid(row=i, column=1, **GRID_FILL_X)
+        
         widget_operand_1 = tk.OptionMenu(
             conditional_grid,
             operand_1,
-            # command=lambda x, widget=widget_custom_1: widget.configure(
-            #     {"state": "normal"}
-            # )
-            # if x == "custom"
-            # else widget.configure({"state": "disabled"}),
             *["", *available_attributes],
         )
         widget_operand_1.grid(row=i, column=0, **GRID_FILL_X)
@@ -368,12 +356,13 @@ def goto_prompt_result():
         [var.get() for var in ACTIVE_ATTRIBUTES[i]]
         for i in range(len(ACTIVE_ATTRIBUTES))
     ][:number_of_tables]
+    conditionals = [[var.get() for var in row] for row in CONDITIONALS]
 
     if sum([sum(attribute_list) for attribute_list in attributes]) == 0:
         popup.showinfo("ERROR", "Query must have at least one attribute")
         return
 
-    results = SQL.query(tables, attributes)
+    results = SQL.query(tables, attributes, conditionals)
 
     for result in results:
         print(result)

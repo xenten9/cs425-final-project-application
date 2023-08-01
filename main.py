@@ -17,6 +17,16 @@ ACTIVE_ATTRIBUTES: tuple[list[tk.BooleanVar]] = (
     [],
     [],
 )
+CONDITIONALS: list[
+    tuple[
+        tk.StringVar, # Operand 1 (table_name or custom)
+        tk.StringVar, # Operand 1 optional custom
+        tk.StringVar, # Operator
+        tk.StringVar, # Operand 2 (table_name or custom)
+        tk.StringVar, # Operand 2 optional custom
+        tk.StringVar, # Logical Join
+    ]
+]
 SQL = SQL_Interface()
 ttk.Style().configure("font_small.TCheckbutton", **FONT_SMALL)
 
@@ -78,7 +88,7 @@ def create_table_menu(number_of_tables: int) -> None:
     )
 
     tk.Button(
-        table_menu, text="Proceed", command=goto_prompt_result, **FONT_MEDIUM
+        table_menu, text="Proceed", command=goto_conditional_creator, **FONT_MEDIUM
     ).pack(**{**PACK_FILL_X, **PACK_BOTTOM})
 
     lists_frame = tk.Frame(table_menu, **HIGHLIGHT_1PT_BLACK)
@@ -163,6 +173,38 @@ def create_table_menu(number_of_tables: int) -> None:
     lists_frame.pack({**PACK_LEFT, **PACK_FILL_BOTH})
 
 
+def create_conditional_creator():
+    # Remove frame if existing
+    MANAGER.destroy_frame("conditonal_creator")
+
+    # Main menu
+    table_menu = MANAGER.create_frame("conditional_creator", {"bg": "#2B2"})
+    
+    # Title
+    tk.Label(table_menu, text="Form conditionals", **FONT_MEDIUM).pack(**{**PACK_FILL_X, **PACK_TOP})
+
+    # Conditonal creation grid
+    conditional_grid = tk.Frame(table_menu, bg="pink")
+    
+    for i in range(10):
+        operand_1 = tk.StringVar(MANAGER.root)
+        operand_1_custom = tk.StringVar(MANAGER.root)
+        operator = tk.StringVar(MANAGER.root)
+        operand_2 = tk.StringVar(MANAGER.root)
+        operand_2_custom = tk.StringVar(MANAGER.root)
+        logical_join = tk.StringVar(MANAGER.root)
+    
+    # Pack conditionals
+    conditional_grid.pack(**{**PACK_FILL_BOTH, **PACK_TOP})
+    
+    # Proceed button
+    tk.Button(
+        table_menu, text="Proceed", command=goto_prompt_result, **FONT_MEDIUM
+    ).pack(**{**PACK_FILL_X, **PACK_BOTTOM})
+    
+    MANAGER.pack("conditional_creator")
+
+
 def goto_table_menu():
     number_of_tables = 0
     for var in ACTIVE_TABLES:
@@ -171,7 +213,10 @@ def goto_table_menu():
             break
         number_of_tables += 1
 
-    if len(set([var.get() for var in ACTIVE_TABLES][:number_of_tables])) < number_of_tables:
+    if (
+        len(set([var.get() for var in ACTIVE_TABLES][:number_of_tables]))
+        < number_of_tables
+    ):
         popup.showinfo("ERROR", "Duplicate tables not allowed!")
         return
 
@@ -212,6 +257,26 @@ def goto_table_menu():
 
     create_table_menu(number_of_tables)
     MANAGER.pack("table_menu_0")
+
+
+def goto_conditional_creator():
+    number_of_tables = 0
+    for var in ACTIVE_TABLES:
+        val = var.get()
+        if val == "none":
+            break
+        number_of_tables += 1
+    
+    attributes = [
+        [var.get() for var in ACTIVE_ATTRIBUTES[i]]
+        for i in range(len(ACTIVE_ATTRIBUTES))
+    ][:number_of_tables]
+
+    if sum([sum(attribute_list) for attribute_list in attributes]) == 0:
+        popup.showinfo("ERROR", "Query must have at least one attribute")
+        return
+    
+    create_conditional_creator()
 
 
 def goto_prompt_result():

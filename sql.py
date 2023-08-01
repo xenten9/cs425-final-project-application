@@ -24,7 +24,7 @@ class SQL_Interface:
         )
         self.tables = [str(table[0]) for table in self.cursor]
 
-        self.table_attributes = dict()
+        self.table_attributes: dict[str, list[str]] = dict()
         for table in self.tables:
             self.cursor.execute(  # Get all column names from table
                 f"""

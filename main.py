@@ -19,14 +19,14 @@ ACTIVE_ATTRIBUTES: tuple[list[tk.BooleanVar]] = (
 )
 CONDITIONALS: list[
     tuple[
-        tk.StringVar, # Operand 1 (table_name or custom)
-        tk.StringVar, # Operand 1 optional custom
-        tk.StringVar, # Operator
-        tk.StringVar, # Operand 2 (table_name or custom)
-        tk.StringVar, # Operand 2 optional custom
-        tk.StringVar, # Logical Join
+        tk.StringVar,  # Operand 1 (table_name or custom)
+        tk.StringVar,  # Operand 1 optional custom
+        tk.StringVar,  # Operator
+        tk.StringVar,  # Operand 2 (table_name or custom)
+        tk.StringVar,  # Operand 2 optional custom
+        tk.StringVar,  # Logical Join
     ]
-]
+] = []
 SQL = SQL_Interface()
 ttk.Style().configure("font_small.TCheckbutton", **FONT_SMALL)
 
@@ -173,35 +173,111 @@ def create_table_menu(number_of_tables: int) -> None:
     lists_frame.pack({**PACK_LEFT, **PACK_FILL_BOTH})
 
 
-def create_conditional_creator():
+def create_conditional_creator(number_of_tables: int) -> None:
     # Remove frame if existing
     MANAGER.destroy_frame("conditonal_creator")
 
     # Main menu
     table_menu = MANAGER.create_frame("conditional_creator", {"bg": "#2B2"})
-    
+
     # Title
-    tk.Label(table_menu, text="Form conditionals", **FONT_MEDIUM).pack(**{**PACK_FILL_X, **PACK_TOP})
+    tk.Label(table_menu, text="Form conditionals", **FONT_MEDIUM).pack(
+        **{**PACK_FILL_X, **PACK_TOP}
+    )
 
     # Conditonal creation grid
     conditional_grid = tk.Frame(table_menu, bg="pink")
-    
+
+    for i in range(5):
+        conditional_grid.grid_columnconfigure(i, weight=1)
+
+    active_tables = [var.get() for var in ACTIVE_TABLES][:number_of_tables]
+    available_attributes: list[str] = []
+    for table in active_tables:
+        available_attributes.extend(
+            [f"{table}.{attribute}" for attribute in SQL.table_attributes[table]]
+        )
+
+    available_operators = ["=", "!=", "<", "<=", ">", ">=", "LIKE", "REGEXP"]
+
+    available_joins = ["", "OR", "AND"]
+
     for i in range(10):
-        operand_1 = tk.StringVar(MANAGER.root)
-        operand_1_custom = tk.StringVar(MANAGER.root)
-        operator = tk.StringVar(MANAGER.root)
-        operand_2 = tk.StringVar(MANAGER.root)
-        operand_2_custom = tk.StringVar(MANAGER.root)
-        logical_join = tk.StringVar(MANAGER.root)
-    
+        operand_1 = tk.StringVar(MANAGER.root, value="")
+        custom_1 = tk.StringVar(MANAGER.root, value="")
+        operator = tk.StringVar(MANAGER.root, value="=")
+        operand_2 = tk.StringVar(MANAGER.root, value="")
+        custom_2 = tk.StringVar(MANAGER.root, value="")
+        logical_join = tk.StringVar(MANAGER.root, value="")
+        CONDITIONALS.append(
+            (
+                operand_1,
+                custom_1,
+                operator,
+                operand_2,
+                custom_2,
+                logical_join,
+            )
+        )
+
+        # Operand 1
+        # widget_custom_1 = tk.Entry(
+        #     conditional_grid, textvariable=custom_1, state="disabled", **FONT_SMALL
+        # )
+        # widget_custom_1.grid(row=i, column=1, **GRID_FILL_X)
+        widget_operand_1 = tk.OptionMenu(
+            conditional_grid,
+            operand_1,
+            # command=lambda x, widget=widget_custom_1: widget.configure(
+            #     {"state": "normal"}
+            # )
+            # if x == "custom"
+            # else widget.configure({"state": "disabled"}),
+            *["", *available_attributes],
+        )
+        widget_operand_1.grid(row=i, column=0, **GRID_FILL_X)
+        widget_operand_1.config(**FONT_SMALL)
+
+        # Operator
+        widget_operator = tk.OptionMenu(
+            conditional_grid, operator, *available_operators
+        )
+        widget_operator.grid(row=i, column=1, **GRID_FILL_X)
+        widget_operator.config(**FONT_SMALL)
+
+        # Operand 2
+        widget_custom_2 = tk.Entry(
+            conditional_grid, textvariable=custom_2, state="disabled", **FONT_SMALL
+        )
+        widget_custom_2.grid(row=i, column=3, **GRID_FILL_X)
+        widget_operand_2 = tk.OptionMenu(
+            conditional_grid,
+            operand_2,
+            command=lambda x, widget=widget_custom_2: widget.configure(
+                {"state": "normal"}
+            )
+            if x == "custom"
+            else widget.configure({"state": "disabled"}),
+            *["", "custom", *available_attributes],
+        )
+        widget_operand_2.grid(row=i, column=2, **GRID_FILL_X)
+        widget_operand_2.config(**FONT_SMALL)
+
+        # Logical join
+        widget_logical_join = tk.OptionMenu(
+            conditional_grid, logical_join, *available_joins
+        )
+        widget_logical_join.grid(row=i, column=4, **GRID_FILL_X)
+        widget_logical_join.config(**FONT_SMALL)
+
     # Pack conditionals
     conditional_grid.pack(**{**PACK_FILL_BOTH, **PACK_TOP})
-    
+
     # Proceed button
     tk.Button(
         table_menu, text="Proceed", command=goto_prompt_result, **FONT_MEDIUM
     ).pack(**{**PACK_FILL_X, **PACK_BOTTOM})
-    
+
     MANAGER.pack("conditional_creator")
 
 
@@ -266,7 +342,7 @@ def goto_conditional_creator():
         if val == "none":
             break
         number_of_tables += 1
-    
+
     attributes = [
         [var.get() for var in ACTIVE_ATTRIBUTES[i]]
         for i in range(len(ACTIVE_ATTRIBUTES))
@@ -275,8 +351,8 @@ def goto_conditional_creator():
     if sum([sum(attribute_list) for attribute_list in attributes]) == 0:
         popup.showinfo("ERROR", "Query must have at least one attribute")
         return
-    
-    create_conditional_creator()
+
+    create_conditional_creator(number_of_tables)
 
 
 def goto_prompt_result():

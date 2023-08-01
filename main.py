@@ -94,11 +94,6 @@ def create_table_menu(number_of_tables: int) -> None:
         # Create frame to contain canvas and scroll bar
         outer_frame = tk.Frame(list_frame)
 
-        # Place outer frame and configure weights
-        # outer_frame.grid(row=0, column=0, **GRID_FILL_Y)
-        # outer_frame.grid_rowconfigure(0, weight=1)
-        # outer_frame.grid_columnconfigure(0, weight=1)
-
         # Create and place canvas
         canvas = tk.Canvas(outer_frame, height=10000)
 
@@ -111,6 +106,7 @@ def create_table_menu(number_of_tables: int) -> None:
         check_boxes_frame = tk.Frame(canvas)
         canvas.create_window((0, 0), window=check_boxes_frame, anchor="nw")
 
+        # Create attribute check boxes
         for row, attribute in enumerate(SQL.table_attributes[table_name]):
             bool_var = tk.BooleanVar(MANAGER.root, value=False)
             checkbox = tk.Checkbutton(
@@ -143,11 +139,14 @@ def create_table_menu(number_of_tables: int) -> None:
             ],
             **FONT_SMALL,
         ).pack(**{**PACK_FILL_X, **PACK_BOTTOM})
-        
         button_frame.pack(**{**PACK_BOTTOM, **PACK_FILL_X})
-        
-        tk.Label(list_frame, text=table_name, **{**FONT_MEDIUM, **HIGHLIGHT_1PT_BLACK}).pack(**{**PACK_TOP, **PACK_FILL_X})
 
+        # Table title
+        tk.Label(
+            list_frame, text=table_name, **{**FONT_MEDIUM, **HIGHLIGHT_1PT_BLACK}
+        ).pack(**{**PACK_TOP, **PACK_FILL_X})
+
+        # Check boxes
         canvas.pack(expand=True, **{**PACK_TOP, **PACK_FILL_Y})
 
         # pack frames
@@ -157,6 +156,9 @@ def create_table_menu(number_of_tables: int) -> None:
         # Set scroll region
         canvas.update()
         canvas.config(scrollregion=canvas.bbox(tk.ALL))
+
+    # Fill in final gap
+    # tk.Label(lists_frame, bg="#CCC").pack(**{**PACK_RIGHT, **PACK_FILL_BOTH})
 
     lists_frame.pack({**PACK_LEFT, **PACK_FILL_BOTH})
 
@@ -168,6 +170,10 @@ def goto_table_menu():
         if val == "none":
             break
         number_of_tables += 1
+
+    if len(set([var.get() for var in ACTIVE_TABLES][:number_of_tables])) < number_of_tables:
+        popup.showinfo("ERROR", "Duplicate tables not allowed!")
+        return
 
     if number_of_tables == 0:
         popup.showinfo("ERROR", "The first table selection cannot be none!")
@@ -209,20 +215,19 @@ def goto_table_menu():
 
 
 def goto_prompt_result():
-    table_count = 0
-    if ACTIVE_TABLES[1].get() == "none":
-        table_count = 1
-    elif ACTIVE_TABLES[2].get() == "none":
-        table_count = 2
-    else:
-        table_count = 3
-    tables = [var.get() for var in ACTIVE_TABLES][:table_count]
+    number_of_tables = 0
+    for var in ACTIVE_TABLES:
+        val = var.get()
+        if val == "none":
+            break
+        number_of_tables += 1
 
+    tables = [var.get() for var in ACTIVE_TABLES][:number_of_tables]
     attributes = [
         [var.get() for var in ACTIVE_ATTRIBUTES[i]]
         for i in range(len(ACTIVE_ATTRIBUTES))
-    ][:table_count]
-    
+    ][:number_of_tables]
+
     if sum([sum(attribute_list) for attribute_list in attributes]) == 0:
         popup.showinfo("ERROR", "Query must have at least one attribute")
         return

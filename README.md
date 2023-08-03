@@ -2,7 +2,7 @@
 
 The final project for our CS425 class at IIT.
 
-## How to use.
+## How to run main.py
 
 First in the main director which this md file is located create a file  ```./password``` with no file extension.
 This file should contain the plain text password for ease of use; However, if not provided a prompt can instead be filled in within the program; However, the program will not remember the password between launches.
@@ -20,4 +20,8 @@ In order to run the project simply execute the command below from the project ro
 ```cmd
 py main.py
 ```
+
+## How to run sql_test.py
+
+Running ```./sql_test.py``` is straight forward and if you have questions for options run the file with the ```-h``` flag for help.
 

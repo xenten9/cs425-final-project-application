@@ -1,19 +1,22 @@
 import tkinter as tk
 
 
-class Tk_Manager:
+class TkManager:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.geometry("1600x900+20+20")
-        self.root.configure(bg="#FF00FF")  # meant to look bad
+        self.root.configure(bg="#F0F")  # meant to look bad
         self._frames: dict[str, tk.Frame] = dict()
         self._current_frame: tk.Frame = None
 
-    def create_frame(self, frame_name: str, kwargs={}) -> tk.Frame:
-        if "bg" not in kwargs:
-            kwargs = {"bg": "#FF00FF", **kwargs}
-        frame = tk.Frame(self.root, **kwargs)
-        self._frames[frame_name] = frame
+    def create_frame(self, frame_name: str, frame: tk.Frame=None, kwargs={}) -> tk.Frame:
+        if frame:
+            self._frames[frame_name] = frame
+        else:
+            if "bg" not in kwargs:
+                kwargs = {"bg": "#FF00FF", **kwargs}
+            frame = tk.Frame(self.root, **kwargs)
+            self._frames[frame_name] = frame
         return frame
 
     def get_frame(self, frame_name: str) -> tk.Frame:

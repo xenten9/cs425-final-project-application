@@ -1,22 +1,18 @@
+from datetime import date
+from decimal import Decimal
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as popup
+import numpy as np
 
 from constants import *
-from sql import SQL_Interface
-from tk_manager import Tk_Manager
+from menus.attribute_menu import AttributeMenu
+from query import Query
+from sql import Sql
+from tk_manager import TkManager
 
-MANAGER = Tk_Manager(tk.Tk())
-ACTIVE_TABLES = (
-    tk.StringVar(MANAGER.root),
-    tk.StringVar(MANAGER.root),
-    tk.StringVar(MANAGER.root),
-)
-ACTIVE_ATTRIBUTES: tuple[list[tk.BooleanVar]] = (
-    [],
-    [],
-    [],
-)
+MANAGER = TkManager(tk.Tk())
+
 CONDITIONALS: list[
     tuple[
         tk.StringVar,  # Operand 1 (table_name or custom)
@@ -26,9 +22,10 @@ CONDITIONALS: list[
         tk.StringVar,  # Logical Join
     ]
 ] = []
-SQL = SQL_Interface()
-ttk.Style().configure("font_small.TCheckbutton", **FONT_SMALL)
+SQL = Sql.get()
 
+QUERY = Query()
+ttk.Style().configure("font_small.TCheckbutton", **FONT_SMALL)
 
 def main():
     # Create menus
@@ -39,308 +36,218 @@ def main():
     MANAGER.root.mainloop()
 
 
+# Create menus
 def create_main_menu() -> None:
     # Main menu
-    main_menu = MANAGER.create_frame("main_menu", {"bg": "#B22"})
+    main_menu = MANAGER.create_frame("main_menu", kwargs={"bg": "#B22"})
 
+    # Title
     tk.Label(main_menu, text="Select tables to query", **FONT_MEDIUM).pack(
         **{**PACK_FILL_X, **PACK_TOP}
     )
 
+    # Accursed mess that is another checkbox grid
+    check_boxes_frame = tk.Frame(main_menu, padx=20, pady=20)
+
+    for row, table in enumerate(SQL.tables):
+        bool_var = QUERY.table_vars[table]
+        checkbox = tk.Checkbutton(
+            check_boxes_frame,
+            variable=bool_var,
+            text=table,
+            **FONT_SMALL,
+        )
+        checkbox.grid(row=row, column=0, **GRID_ALIGN_LEFT)
+
+    # Use natural joins?
+    bool_var = QUERY.use_natural_join
+    checkbox = tk.Checkbutton(
+        check_boxes_frame,
+        variable=bool_var,
+        text="Use natural join?",
+        **FONT_SMALL,
+    )
+    checkbox.grid(row=row, column=0, **GRID_ALIGN_LEFT)
+
     # Main menu span
     span_frame = tk.Frame(main_menu)
-
-    options = [
-        tk.OptionMenu(span_frame, ACTIVE_TABLES[0], *["none", *SQL.tables]),
-        tk.OptionMenu(span_frame, ACTIVE_TABLES[1], *["none", *SQL.tables]),
-        tk.OptionMenu(span_frame, ACTIVE_TABLES[2], *["none", *SQL.tables]),
-    ]
-
     widgets: list[tk.Widget] = [
-        *options,
-        tk.Label(span_frame),
+        tk.Button(
+            span_frame,
+            text="Reset selection",
+            command=lambda: [var.set(0) for var in QUERY.table_vars.values()],
+            **FONT_SMALL,
+        ),
         tk.Button(span_frame, text="Proceed", command=goto_table_menu, **FONT_SMALL),
     ]
-
-    for i, option in enumerate(options):
-        option.config(width=6)
-        option.config(direction="above")
-        option.config(**FONT_SMALL)
-        ACTIVE_TABLES[i].set("none")
 
     for i, widget in enumerate(widgets):
         widget.grid(row=0, column=i, **GRID_FILL_BOTH)
         span_frame.grid_columnconfigure(i, weight=1)
 
-    span_frame.pack(fill="x", side="bottom")
+    # Pack frames
+    span_frame.pack(**{**PACK_FILL_X, **PACK_BOTTOM})
+    check_boxes_frame.pack(**{**PACK_TOP, **PACK_FILL_BOTH})
 
 
-def create_table_menu(number_of_tables: int) -> None:
-    # Remove frame if existing
-    MANAGER.destroy_frame("table_menu_0")
+def create_attribute_menu(tables: list[str]) -> None:
+    # Attribute menu
+    menu = AttributeMenu(MANAGER, **{"bg": "#00F"})
+    menu.create(QUERY)
+    MANAGER.pack("attribute_menu")
 
-    # Main menu
-    table_menu = MANAGER.create_frame("table_menu_0", {"bg": "#2B2"})
 
-    tk.Label(table_menu, text="Select attributes to return", **FONT_MEDIUM).pack(
-        **{**PACK_FILL_X, **PACK_TOP}
+
+
+def create_results_menu(results, headers: list[str]) -> None:
+    frame_results = MANAGER.create_frame("results")
+
+    # External UI
+    tk.Label(frame_results, text="Results", **FONT_MEDIUM).pack(
+        **{**PACK_TOP, **PACK_FILL_X}
     )
 
     tk.Button(
-        table_menu, text="Proceed", command=goto_conditional_creator, **FONT_MEDIUM
-    ).pack(**{**PACK_FILL_X, **PACK_BOTTOM})
+        frame_results,
+        text="Go back to conditional",
+        command=lambda: MANAGER.pack("conditional_creator"),
+        **FONT_MEDIUM,
+    ).pack(**{**PACK_BOTTOM, **PACK_FILL_X})
 
-    lists_frame = tk.Frame(table_menu, **HIGHLIGHT_1PT_BLACK)
+    # Table for results
+    frame_table_container = tk.Frame(frame_results, bg="#228")
+    canvas = tk.Canvas(frame_table_container, height=10000, bg="#CCC")
+    frame_table = tk.Frame(canvas, bg="#000", **SMALL_PAD)
 
-    for i in range(number_of_tables):
-        table_name = ACTIVE_TABLES[i].get()
+    # Create and bind scroll bars
+    yscrollbar = tk.Scrollbar(
+        frame_table_container, orient="vertical", command=canvas.yview
+    )
+    yscrollbar.pack(**{**PACK_FILL_Y, **PACK_RIGHT})
+    canvas.configure(yscrollcommand=yscrollbar.set)
 
-        active_attribute_list = ACTIVE_ATTRIBUTES[i]
-        active_attribute_list.clear()
+    xscrollbar = tk.Scrollbar(
+        frame_table_container, orient="horizontal", command=canvas.xview
+    )
+    xscrollbar.pack(**{**PACK_FILL_X, **PACK_BOTTOM})
+    canvas.configure(xscrollcommand=xscrollbar.set)
 
-        list_frame = tk.Frame(lists_frame, bg="#CCC", **HIGHLIGHT_1PT_BLACK)
+    # Create window for frame table in canvas
+    canvas.create_window((0, 0), window=frame_table, anchor="nw")
 
-        # Create frame to contain canvas and scroll bar
-        outer_frame = tk.Frame(list_frame)
-
-        # Create and place canvas
-        canvas = tk.Canvas(outer_frame, height=10000)
-
-        # Create and bind scroll bar
-        scrollbar = tk.Scrollbar(outer_frame, orient="vertical", command=canvas.yview)
-        scrollbar.pack(**{**PACK_FILL_Y, **PACK_RIGHT})
-        canvas.configure(yscrollcommand=scrollbar.set)
-
-        # Create and populate subframe
-        check_boxes_frame = tk.Frame(canvas)
-        canvas.create_window((0, 0), window=check_boxes_frame, anchor="nw")
-
-        # Create attribute check boxes
-        for row, attribute in enumerate(SQL.table_attributes[table_name]):
-            bool_var = tk.BooleanVar(MANAGER.root, value=False)
-            checkbox = tk.Checkbutton(
-                check_boxes_frame,
-                offvalue=False,
-                onvalue=True,
-                variable=bool_var,
-                text=attribute,
-                **FONT_SMALL,
-            )
-            active_attribute_list.append(bool_var)
-
-            checkbox.grid(row=row, column=0, **GRID_ALIGN_LEFT)
-
-        # Enable and disable all buttons
-        button_frame = tk.Frame(list_frame, **HIGHLIGHT_1PT_BLACK)
-        tk.Button(
-            button_frame,
-            text="disable all",
-            command=lambda i=i: [
-                attribute.set(False) for attribute in ACTIVE_ATTRIBUTES[i]
-            ],
-            **FONT_SMALL,
-        ).pack(**{**PACK_FILL_X, **PACK_BOTTOM})
-        tk.Button(
-            button_frame,
-            text="enable all",
-            command=lambda i=i: [
-                attribute.set(True) for attribute in ACTIVE_ATTRIBUTES[i]
-            ],
-            **FONT_SMALL,
-        ).pack(**{**PACK_FILL_X, **PACK_BOTTOM})
-        button_frame.pack(**{**PACK_BOTTOM, **PACK_FILL_X})
-
-        # Table title
-        tk.Label(
-            list_frame, text=table_name, **{**FONT_MEDIUM, **HIGHLIGHT_1PT_BLACK}
-        ).pack(**{**PACK_TOP, **PACK_FILL_X})
-
-        # Check boxes
-        canvas.pack(expand=True, **{**PACK_TOP, **PACK_FILL_Y})
-
-        # pack frames
-        outer_frame.pack(**PACK_FILL_Y)
-        list_frame.pack(**{**PACK_FILL_Y, **PACK_LEFT})
-
-        # Set scroll region
-        canvas.update()
-        canvas.config(scrollregion=canvas.bbox(tk.ALL))
-
-    # Fill in final gap
-    # tk.Label(lists_frame, bg="#CCC").pack(**{**PACK_RIGHT, **PACK_FILL_BOTH})
-
-    lists_frame.pack({**PACK_LEFT, **PACK_FILL_BOTH})
-
-
-def create_conditional_creator(number_of_tables: int) -> None:
-    # Remove frame if existing
-    MANAGER.destroy_frame("conditonal_creator")
-
-    # Main menu
-    table_menu = MANAGER.create_frame("conditional_creator", {"bg": "#2B2"})
-
-    # Title
-    tk.Label(table_menu, text="Form conditionals", **FONT_MEDIUM).pack(
-        **{**PACK_FILL_X, **PACK_TOP}
+    tk.Label(frame_table, text="result #", **FONT_SMALL).grid(
+        row=0, column=0, **{**SMALL_PAD, **GRID_FILL_X}
     )
 
-    # Conditonal creation grid
-    conditional_grid = tk.Frame(table_menu, bg="pink")
-
-    for i in range(5):
-        conditional_grid.grid_columnconfigure(i, weight=1)
-
-    active_tables = [var.get() for var in ACTIVE_TABLES][:number_of_tables]
-    available_attributes: list[str] = []
-    for table in active_tables:
-        available_attributes.extend(
-            [f"{table}.{attribute}" for attribute in SQL.table_attributes[table]]
+    for i, header in enumerate(headers):
+        tk.Label(frame_table, text=header, **FONT_SMALL_BOLD).grid(
+            row=0, column=i + 1, **{**SMALL_PAD, **GRID_FILL_X}
         )
 
-    available_operators = ["=", "!=", "<", "<=", ">", ">=", "LIKE", "REGEXP"]
-
-    available_joins = ["", "OR", "AND"]
-
-    for i in range(10):
-        operand_1 = tk.StringVar(MANAGER.root, value="")
-        operator = tk.StringVar(MANAGER.root, value="=")
-        operand_2 = tk.StringVar(MANAGER.root, value="")
-        custom_2 = tk.StringVar(MANAGER.root, value="")
-        logical_join = tk.StringVar(MANAGER.root, value="")
-        CONDITIONALS.append(
-            (
-                operand_1,
-                # custom_1,
-                operator,
-                operand_2,
-                custom_2,
-                logical_join,
+    for i, result in enumerate(results):
+        tk.Label(frame_table, text=str(i + 1), **{**FONT_SMALL, **RIGHT_ALIGN}).grid(
+            row=i + 1, column=0, **{**SMALL_PAD, **GRID_FILL_X}
+        )
+        for j, cell in enumerate(result):
+            if isinstance(cell, date):
+                cell = f"{cell.month}/{cell.day}/{cell.year}"
+            elif isinstance(cell, Decimal):
+                cell = float(cell)
+                cell = "{:,.2f}".format(cell)
+            tk.Label(frame_table, text=str(cell), **{**FONT_SMALL, **LEFT_ALIGN}).grid(
+                row=i + 1, column=j + 1, **{**SMALL_PAD, **GRID_FILL_X}
             )
-        )
-        
-        widget_operand_1 = tk.OptionMenu(
-            conditional_grid,
-            operand_1,
-            *["", *available_attributes],
-        )
-        widget_operand_1.grid(row=i, column=0, **GRID_FILL_X)
-        widget_operand_1.config(**FONT_SMALL)
 
-        # Operator
-        widget_operator = tk.OptionMenu(
-            conditional_grid, operator, *available_operators
-        )
-        widget_operator.grid(row=i, column=1, **GRID_FILL_X)
-        widget_operator.config(**FONT_SMALL)
+    # Packing events
+    canvas.pack(expand=True, **{**PACK_TOP, **PACK_FILL_BOTH})
+    frame_table_container.pack(**PACK_FILL_BOTH)
 
-        # Operand 2
-        widget_custom_2 = tk.Entry(
-            conditional_grid, textvariable=custom_2, state="disabled", **FONT_SMALL
-        )
-        widget_custom_2.grid(row=i, column=3, **GRID_FILL_X)
-        widget_operand_2 = tk.OptionMenu(
-            conditional_grid,
-            operand_2,
-            command=lambda x, widget=widget_custom_2: widget.configure(
-                {"state": "normal"}
-            )
-            if x == "custom"
-            else widget.configure({"state": "disabled"}),
-            *["", "custom", *available_attributes],
-        )
-        widget_operand_2.grid(row=i, column=2, **GRID_FILL_X)
-        widget_operand_2.config(**FONT_SMALL)
-
-        # Logical join
-        widget_logical_join = tk.OptionMenu(
-            conditional_grid, logical_join, *available_joins
-        )
-        widget_logical_join.grid(row=i, column=4, **GRID_FILL_X)
-        widget_logical_join.config(**FONT_SMALL)
-
-    # Pack conditionals
-    conditional_grid.pack(**{**PACK_FILL_BOTH, **PACK_TOP})
-
-    # Proceed button
-    tk.Button(
-        table_menu, text="Proceed", command=goto_prompt_result, **FONT_MEDIUM
-    ).pack(**{**PACK_FILL_X, **PACK_BOTTOM})
-
-    MANAGER.pack("conditional_creator")
+    # Set scroll region
+    canvas.update()
+    canvas.config(scrollregion=canvas.bbox(tk.ALL))
 
 
+# Goto menus
 def goto_table_menu():
-    number_of_tables = 0
-    for var in ACTIVE_TABLES:
-        val = var.get()
-        if val == "none":
-            break
-        number_of_tables += 1
+    tables = QUERY.get_tables()
 
-    if (
-        len(set([var.get() for var in ACTIVE_TABLES][:number_of_tables]))
-        < number_of_tables
-    ):
-        popup.showinfo("ERROR", "Duplicate tables not allowed!")
+    #
+    if len(tables) == 0:
+        popup.showinfo("ERROR", "Must select at least one table!")
         return
 
-    if number_of_tables == 0:
-        popup.showinfo("ERROR", "The first table selection cannot be none!")
-        return
+    # Validate table connections for Natural Join
+    if QUERY.use_natural_join.get():
+        # Form relation matrix
+        mat: list[list[bool]] = []
+        for i, table_0 in enumerate(tables):
+            mat.append([])
+            for table_1 in tables:
+                mat[i].append(
+                    any(
+                        (
+                            attribute in SQL.table_attributes[table_0]
+                            for attribute in SQL.table_attributes[table_1]
+                        )
+                    )
+                )
 
-    if number_of_tables == 2:
-        table_0_attributes = SQL.table_attributes[ACTIVE_TABLES[0].get()]
-        table_1_attributes = SQL.table_attributes[ACTIVE_TABLES[1].get()]
-
-        valid01 = any(
-            [attribute in table_1_attributes for attribute in table_0_attributes]
-        )
-
-        if not (valid01):
-            popup.showinfo("ERROR", "Tables cannot be naturally joined!")
+        # Check to see if all cells are accessible in n-1 (max required) steps
+        if np.prod(np.mat(mat) ** (len(tables) - 1)) == 0:
+            popup.showinfo("ERROR", "Tables cannot be natrual joined!")
             return
 
-    if number_of_tables == 3:
-        table_0_attributes = SQL.table_attributes[ACTIVE_TABLES[0].get()]
-        table_1_attributes = SQL.table_attributes[ACTIVE_TABLES[1].get()]
-        table_2_attributes = SQL.table_attributes[ACTIVE_TABLES[2].get()]
-
-        valid01 = any(
-            [attribute in table_1_attributes for attribute in table_0_attributes]
-        )
-        valid12 = any(
-            [attribute in table_2_attributes for attribute in table_1_attributes]
-        )
-        valid20 = any(
-            [attribute in table_0_attributes for attribute in table_2_attributes]
-        )
-
-        if (valid01 + valid12 + valid20) < 2:
-            popup.showinfo("ERROR", "Tables cannot be naturally joined!")
-            return
-
-    create_table_menu(number_of_tables)
-    MANAGER.pack("table_menu_0")
+    MANAGER.destroy_frame("attribute_menu")
+    create_attribute_menu(tables)
+    MANAGER.pack("attribute_menu")
 
 
 def goto_conditional_creator():
-    number_of_tables = 0
-    for var in ACTIVE_TABLES:
-        val = var.get()
-        if val == "none":
-            break
-        number_of_tables += 1
+    tables = [table if ACTIVE_TABLES[table].get() else None for table in ACTIVE_TABLES]
+    tables = list(filter(lambda x: x, tables))
 
-    attributes = [
-        [var.get() for var in ACTIVE_ATTRIBUTES[i]]
-        for i in range(len(ACTIVE_ATTRIBUTES))
-    ][:number_of_tables]
+    attributes = {
+        table: [
+            var.get()
+            for var in ACTIVE_ATTRIBUTES[table].values()
+        ]
+        for table in tables
+    }
 
     if sum([sum(attribute_list) for attribute_list in attributes]) == 0:
         popup.showinfo("ERROR", "Query must have at least one attribute")
         return
 
-    create_conditional_creator(number_of_tables)
+    MANAGER.destroy_frame("conditional_creator")
+    create_conditional_menu(number_of_tables)
+    MANAGER.pack("conditional_creator")
+
+
+def goto_order_attributes():
+    # Get number of tables
+    number_of_tables = 0
+    for var in ACTIVE_TABLES:
+        val = var.get()
+        if val == "none":
+            break
+        number_of_tables += 1
+
+    # Get list of table names
+    tables = [var.get() for var in ACTIVE_TABLES][:number_of_tables]
+
+    # Get list of attributes
+    attributes = [
+        [var.get() for var in ACTIVE_ATTRIBUTES[i]]
+        for i in range(len(ACTIVE_ATTRIBUTES))
+    ][:number_of_tables]
+
+    # Get list of unique attribute names
+    ordered_attributes: list[str] = []
+    for i, table in enumerate(tables):
+        for j in range(len(attributes[i])):
+            if attributes[i][j]:
+                ordered_attributes.append(SQL.table_attributes[table][j])
+    ordered_attributes = list(set(ordered_attributes))
 
 
 def goto_prompt_result():
@@ -362,10 +269,11 @@ def goto_prompt_result():
         popup.showinfo("ERROR", "Query must have at least one attribute")
         return
 
-    results = SQL.query(tables, attributes, conditionals)
+    results, headers = SQL.query(tables, attributes, conditionals)
 
-    for result in results:
-        print(result)
+    MANAGER.destroy_frame("results")
+    create_results_menu(results, headers)
+    MANAGER.pack("results")
 
 
 if __name__ == "__main__":

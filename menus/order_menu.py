@@ -33,16 +33,18 @@ class OrderMenu(tk.Frame):
             options = [str(i + 1) for i in range(len(query.ordering_vars))]
 
             order_frame = tk.Frame(root, name="ordering")
-            
+
             order_frame.columnconfigure(0, weight=2)
             order_frame.columnconfigure(1, weight=1)
 
             for i, attribute in enumerate(full_attribute_list):
                 row = i % 16
-                column = 2*(i // 16)
+                column = 2 * (i // 16)
                 order_frame.rowconfigure(i, weight=1)
                 variable = query.ordering_vars[attribute]
-                tk.Label(order_frame, text=attribute, **FONT_SMALL).grid(row=row, column=column)
+                tk.Label(order_frame, text=attribute, **FONT_SMALL).grid(
+                    row=row, column=column
+                )
                 option = tk.OptionMenu(
                     order_frame,
                     variable,
@@ -58,7 +60,7 @@ class OrderMenu(tk.Frame):
                         func(root).pack(**PACK_FILL_Y),
                     ],
                 )
-                option.grid(row=row, column=column+1)
+                option.grid(row=row, column=column + 1)
                 option.config(**FONT_SMALL)
 
             return order_frame

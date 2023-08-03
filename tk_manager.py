@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 
-class TkManager():
+class TkManager:
     def __init__(self, root: tk.Tk, *args, **kwargs):
         self.root = root
         self.root.geometry("1600x900+20+20")
@@ -12,11 +12,13 @@ class TkManager():
         self._current_frame: tk.Frame = None
 
     def __on_closing(self):
-        if(messagebox.askokcancel("Quit", "Quit program?")):
+        if messagebox.askokcancel("Quit", "Quit program?"):
             self.root.destroy()
             self.root.quit()
 
-    def create_frame(self, frame_name: str, frame: tk.Frame=None, kwargs={}) -> tk.Frame:
+    def create_frame(
+        self, frame_name: str, frame: tk.Frame = None, kwargs={}
+    ) -> tk.Frame:
         if frame:
             self._frames[frame_name] = frame
         else:

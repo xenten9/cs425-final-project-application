@@ -104,4 +104,3 @@ class TableMenu(tk.Frame):
 
     def goto_prev(self):
         self.manager.pack("main_menu")
-

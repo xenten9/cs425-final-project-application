@@ -1,5 +1,3 @@
-from tkinter import ttk
-
 SMALL_PAD = {"padx": 1, "pady": 1}
 
 GRID_FILL_X = {"sticky": "ew"}
@@ -31,4 +29,3 @@ FONT_LARGE_BOLD = {"font": ("arial", 48, "bold")}
 HIGHLIGHT_1PT_BLACK = {"highlightbackground": "#000", "highlightthickness": 1}
 
 CHECKBOX_FONT_SMALL = {"style": "font_small.TCheckbutton"}
-

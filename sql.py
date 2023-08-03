@@ -75,7 +75,7 @@ class Sql:
     def __init__(self) -> None:
         self.active_query = None
         self._results = None
-        
+
         # Access database
         file = open("./password")
         password = file.read()

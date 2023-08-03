@@ -3,21 +3,19 @@ import tkinter.messagebox as popup
 
 from constants import *
 from menus.results_menu import ResultsMenu
-from query import Query
 from sql import Sql
 from tk_manager import TkManager
 
 
 class OrderMenu(tk.Frame):
-    def __init__(self, root: TkManager, query: Query, *args, **kwargs):
-        super().__init__(root.root, *args, **kwargs)
-        self.root = root
-        self.query = query
+    def __init__(self, manager: TkManager, *args, **kwargs):
+        super().__init__(manager.root, *args, **kwargs)
+        self.root = manager
 
     def create(self):
-        query = self.query
-        tables = query.get_tables()
-        attributes = query.get_attributes()
+        query = Sql.get().get_active_query()
+        # tables = query.get_tables()
+        # attributes = query.get_attributes()
 
         self.root.create_frame("order_menu", self)
 
@@ -30,7 +28,7 @@ class OrderMenu(tk.Frame):
         for i, attribute in enumerate(query.ordering_vars.keys()):
             query.ordering_vars[attribute].set(str(i + 1))
 
-        def form_attribute_ordering(root: tk.Frame, query: Query) -> tk.Frame:
+        def form_attribute_ordering(root: tk.Frame) -> tk.Frame:
             full_attribute_list = query.get_ordered_attributes()
             options = [str(i + 1) for i in range(len(query.ordering_vars))]
 
@@ -49,7 +47,7 @@ class OrderMenu(tk.Frame):
                     order_frame,
                     variable,
                     *options,
-                    command=lambda x, variable=variable, val=i + 1, query=query, frame=order_frame, func=form_attribute_ordering, root=root: [
+                    command=lambda x, variable=variable, val=i + 1, frame=order_frame, func=form_attribute_ordering, root=root: [
                         [
                             var.set(str(val))
                             if var.get() == variable.get() and var != variable
@@ -57,7 +55,7 @@ class OrderMenu(tk.Frame):
                             for var in query.ordering_vars.values()
                         ],
                         frame.destroy(),
-                        func(root, query).pack(**PACK_FILL_Y),
+                        func(root).pack(**PACK_FILL_Y),
                     ],
                 )
                 option.grid(row=row, column=column+1)
@@ -65,7 +63,7 @@ class OrderMenu(tk.Frame):
 
             return order_frame
 
-        form_attribute_ordering(self, query).pack(**PACK_FILL_Y)
+        form_attribute_ordering(self).pack(**PACK_FILL_Y)
 
         # Proceed button
         button_frame = tk.Frame(self)
@@ -75,29 +73,25 @@ class OrderMenu(tk.Frame):
         tk.Button(
             button_frame,
             text="Proceed",
-            command=lambda query=query: self.goto_next(query),
+            command=self.goto_next,
             **FONT_MEDIUM,
         ).grid(row=0, column=1, **{**GRID_FILL_X})
         tk.Button(
             button_frame,
             text="Go back",
-            command=lambda query=query: self.goto_prev(query),
+            command=self.goto_prev,
             **FONT_MEDIUM,
         ).grid(row=0, column=0, **{**GRID_FILL_X})
 
-    def goto_next(self, query: Query):
-        attributes = query.get_attributes()
+    def goto_next(self):
+        attributes = Sql.get().get_active_query().get_attributes()
 
-        if len((attributes)) == 0:
-            popup.showinfo("ERROR", "Query must have at least one attribute")
-            return
-
-        results = Sql.get().query(query)
+        Sql.get().query()
 
         self.root.destroy_frame("results_menu")
-        results_menu = ResultsMenu(self.root, query, results)
+        results_menu = ResultsMenu(self.root)
         results_menu.create()
         self.root.pack("results_menu")
 
-    def goto_prev(self, query: Query):
+    def goto_prev(self):
         self.root.pack("conditional_menu")

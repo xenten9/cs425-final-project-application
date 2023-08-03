@@ -3,7 +3,6 @@ import tkinter.messagebox as popup
 
 from constants import *
 from menus.conditional_menu import ConditionalMenu
-from query import Query
 from sql import Sql
 from tk_manager import TkManager
 
@@ -11,12 +10,13 @@ from tk_manager import TkManager
 class AttributeMenu(tk.Frame):
     def __init__(self, root: TkManager, *args, **kwargs) -> None:
         super().__init__(root.root, *args, **kwargs)
-        self.root = root
+        self.manager = root
 
-    def create(self, query: Query):
+    def create(self):
+        query = Sql.get().get_active_query()
         tables = query.get_tables()
-        
-        self.root.create_frame("attribute_menu", self)
+
+        self.manager.create_frame("attribute_menu", self)
 
         # Title
         tk.Label(self, text="Select attributes to return", **FONT_MEDIUM).pack(
@@ -30,14 +30,14 @@ class AttributeMenu(tk.Frame):
         tk.Button(
             frame,
             text="Go back",
-            command=lambda query=query: self.goto_prev(query),
+            command=self.goto_prev,
             **FONT_MEDIUM,
         ).grid(row=0, column=0, **GRID_FILL_X)
         frame.columnconfigure(1, weight=1)
         tk.Button(
             frame,
             text="Proceed",
-            command=lambda query=query: self.goto_next(query),
+            command=self.goto_next,
             **FONT_MEDIUM,
         ).grid(row=0, column=1, **GRID_FILL_X)
 
@@ -128,23 +128,21 @@ class AttributeMenu(tk.Frame):
             )
         )
 
-    def goto_next(self, query: Query):
-        root = self.root
+    def goto_next(self):
+        query = Sql.get().get_active_query()
+        manager = self.manager
         attributes = query.get_attributes()
 
         # Select at least one attribute
-        if (
-            sum([len(attribute_list) for attribute_list in attributes.values()])
-            == 0
-        ):
+        if sum([len(attribute_list) for attribute_list in attributes.values()]) == 0:
             popup.showinfo("ERROR", "Query must have at least one attribute")
             return
 
         # Make room for new conditional menu
-        root.destroy_frame("conditional_creator")
-        conditional_creator = ConditionalMenu(root, query)
+        manager.destroy_frame("conditional_menu")
+        conditional_creator = ConditionalMenu(manager)
         conditional_creator.create()
-        root.pack("conditional_creator")
+        manager.pack("conditional_menu")
 
-    def goto_prev(self, query: Query):
-        pass
+    def goto_prev(self):
+        self.manager.pack("table_menu")

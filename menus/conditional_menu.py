@@ -3,22 +3,20 @@ import tkinter.messagebox as popup
 
 from constants import *
 from menus.order_menu import OrderMenu
-from query import Query
 from sql import Sql
 from tk_manager import TkManager
 
 
 class ConditionalMenu(tk.Frame):
-    def __init__(self, root: TkManager, query: Query, *args, **kwargs):
+    def __init__(self, root: TkManager, *args, **kwargs):
         super().__init__(root.root, *args, **kwargs)
         self.root = root
-        self.query = query
 
     def create(self):
-        query = self.query
+        query = Sql.get().get_active_query()
         tables = query.get_tables()
 
-        self.root.create_frame("conditional_creator", self)
+        self.root.create_frame("conditional_menu", self)
 
         # Title
         tk.Label(self, text="Form conditionals", **FONT_MEDIUM).pack(
@@ -111,27 +109,23 @@ class ConditionalMenu(tk.Frame):
         tk.Button(
             button_frame,
             text="Proceed",
-            command=lambda query=query: self.goto_next(query),
+            command=self.goto_next,
             **FONT_MEDIUM,
         ).grid(row=0, column=1, **{**GRID_FILL_X})
         tk.Button(
             button_frame,
             text="Go back",
-            command=lambda query=query: self.goto_prev(query),
+            command=self.goto_prev,
             **FONT_MEDIUM,
         ).grid(row=0, column=0, **{**GRID_FILL_X})
-        
 
-    def goto_next(self, query: Query):
+    def goto_next(self):
         root = self.root
-        tables = query.get_tables()
-        attributes = query.get_attributes()
-        
-        
+
         root.destroy_frame("order_menu")
-        order_menu = OrderMenu(root, query)
+        order_menu = OrderMenu(root)
         order_menu.create()
         root.pack("order_menu")
 
-    def goto_prev(self, query: Query):
+    def goto_prev(self):
         self.root.pack("attribute_menu")

@@ -2,14 +2,80 @@ from __future__ import annotations
 
 import pymysql
 import tkinter.messagebox as popup
+import tkinter as tk
 
-#from query import Query
+
+class Query:
+    def __init__(self) -> None:
+        self.table_vars: dict[str, tk.BooleanVar] = {
+            table: tk.BooleanVar() for table in Sql.get().tables
+        }
+        self.attribute_vars: dict[str, dict[str, tk.BooleanVar]]
+        self.conditional_vars: list[
+            tuple[tk.StringVar, tk.StringVar, tk.StringVar, tk.StringVar, tk.StringVar]
+        ] = []
+        self.ordering_vars: dict[str, tk.StringVar]
+        self.use_natural_join = tk.BooleanVar(value=1)
+
+    def update_attributes(self):
+        self.attribute_vars: dict[str, dict[str, tk.BooleanVar]] = {
+            table: {
+                attribute: tk.BooleanVar()
+                for attribute in Sql.get().table_attributes[table]
+            }
+            for table in Sql.get().tables
+        }
+
+    def update_ordering(self):
+        list_of_attributes = []
+        for table in self.get_tables():
+            list_of_attributes.extend(self.get_attributes()[table])
+        self.ordering_vars: dict[str, tk.StringVar] = {
+            attribute: tk.StringVar() for attribute in list_of_attributes
+        }
+
+    def get_tables(self) -> list[str]:
+        return list(
+            filter(
+                lambda x: x,
+                [
+                    table if var.get() else None
+                    for table, var in self.table_vars.items()
+                ],
+            )
+        )
+
+    def get_attributes(self) -> dict[str, list[str]]:
+        return {
+            table: list(
+                filter(
+                    lambda x: x,
+                    [
+                        attribute if var.get() else None
+                        for attribute, var in self.attribute_vars[table].items()
+                    ],
+                )
+            )
+            for table in self.get_tables()
+        }
+
+    def get_conditionals(self) -> list[tuple[str, str, str, str, str]]:
+        return [tuple([var.get() for var in row]) for row in self.conditional_vars]
+
+    def get_ordered_attributes(self) -> list[str]:
+        out = [None] * len(self.ordering_vars)
+        for attribute, var in self.ordering_vars.items():
+            out[int(var.get()) - 1] = attribute
+        return out
 
 
 class Sql:
     _instance = None
 
     def __init__(self) -> None:
+        self.active_query = None
+        self._results = None
+        
         # Access database
         file = open("./password")
         password = file.read()
@@ -50,7 +116,11 @@ class Sql:
                 self.table_attributes[table].append(row[0])
                 self.table_types[table][row[0]] = row[1]
 
-    def query(self, query: "Query") -> tuple:
+    def create_query(self):
+        self.active_query = Query()
+
+    def query(self) -> tuple:
+        query = self.get_active_query()
         attributes = query.get_ordered_attributes()
         tables = query.get_tables()
         conditionals = query.get_conditionals()
@@ -128,9 +198,15 @@ class Sql:
 
         self.cursor.execute(command, arguments)
 
-        return self.cursor.fetchall()
+        self._results = self.cursor.fetchall()
 
     def get():
         if not Sql._instance:
             Sql._instance = Sql()
         return Sql._instance
+
+    def get_active_query(self) -> Query:
+        return self.active_query
+
+    def get_results(self) -> tuple:
+        return self._results

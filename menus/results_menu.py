@@ -1,24 +1,21 @@
 from datetime import date
 from decimal import Decimal
 import tkinter as tk
-import tkinter.messagebox as popup
 
 from constants import *
-from query import Query
-from sql import Sql
+from sql import Sql, Query
 from tk_manager import TkManager
 
+
 class ResultsMenu(tk.Frame):
-    def __init__(self, root: TkManager, query: Query, results: tuple, *args, **kwargs):
+    def __init__(self, root: TkManager, *args, **kwargs):
         super().__init__(root.root, *args, **kwargs)
         self.root = root
-        self.query = query
-        self.results = results
 
     def create(self):
-        query = self.query
-        results = self.results
-        
+        query = Sql.get().get_active_query()
+        results = Sql.get().get_results()
+
         self.root.create_frame("results_menu", self)
 
         # External UI
@@ -64,9 +61,9 @@ class ResultsMenu(tk.Frame):
             )
 
         for i, result in enumerate(results):
-            tk.Label(frame_table, text=str(i + 1), **{**FONT_SMALL, **RIGHT_ALIGN}).grid(
-                row=i + 1, column=0, **{**SMALL_PAD, **GRID_FILL_X}
-            )
+            tk.Label(
+                frame_table, text=str(i + 1), **{**FONT_SMALL, **RIGHT_ALIGN}
+            ).grid(row=i + 1, column=0, **{**SMALL_PAD, **GRID_FILL_X})
             for j, cell in enumerate(result):
                 if isinstance(cell, date):
                     cell = f"{cell.month}/{cell.day}/{cell.year}"
@@ -90,4 +87,3 @@ class ResultsMenu(tk.Frame):
 
     def goto_prev(self, query: Query):
         self.root.pack("order_menu")
-

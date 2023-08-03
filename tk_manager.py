@@ -1,13 +1,20 @@
 import tkinter as tk
+from tkinter import messagebox
 
 
-class TkManager:
-    def __init__(self, root: tk.Tk):
+class TkManager():
+    def __init__(self, root: tk.Tk, *args, **kwargs):
         self.root = root
         self.root.geometry("1600x900+20+20")
         self.root.configure(bg="#F0F")  # meant to look bad
+        self.root.protocol("WM_DELETE_WINDOW", self.__on_closing)
         self._frames: dict[str, tk.Frame] = dict()
         self._current_frame: tk.Frame = None
+
+    def __on_closing(self):
+        if(messagebox.askokcancel("Quit", "Quit program?")):
+            self.root.destroy()
+            self.root.quit()
 
     def create_frame(self, frame_name: str, frame: tk.Frame=None, kwargs={}) -> tk.Frame:
         if frame:

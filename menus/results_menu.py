@@ -1,6 +1,9 @@
 from datetime import date
 from decimal import Decimal
+import json
+import os
 import tkinter as tk
+from tkinter.filedialog import asksaveasfilename
 
 from constants import *
 from sql import Sql
@@ -8,15 +11,15 @@ from tk_manager import TkManager
 
 
 class ResultsMenu(tk.Frame):
-    def __init__(self, root: TkManager, *args, **kwargs):
-        super().__init__(root.root, *args, **kwargs)
-        self.root = root
+    def __init__(self, manager: TkManager, *args, **kwargs):
+        super().__init__(manager.root, *args, **kwargs)
+        self.manager = manager
 
     def create(self):
         query = Sql.get().get_active_query()
         results = Sql.get().get_results()
 
-        self.root.create_frame("results_menu", self)
+        self.manager.create_frame("results_menu", self)
 
         # External UI
         tk.Label(self, text="Results", bg="#FFD", **FONT_MEDIUM_BOLD).pack(
@@ -31,7 +34,13 @@ class ResultsMenu(tk.Frame):
             text="Go back",
             command=self.goto_prev,
             **FONT_MEDIUM,
-        ).pack(**{**PACK_FILL_X, **SMALL_PAD})
+        ).pack(**{**PACK_LEFT, **PACK_FILL_X, **SMALL_PAD})
+        tk.Button(
+            button_frame,
+            text="Save query to disk",
+            command=self.save_query,
+            **FONT_MEDIUM,
+        ).pack(**{**PACK_LEFT, **PACK_FILL_X, **SMALL_PAD})
 
         # Table for results
         frame_table_container = tk.Frame(self, bg="#228")
@@ -88,5 +97,22 @@ class ResultsMenu(tk.Frame):
     def goto_next(self):
         pass
 
+    def save_query(self):
+        query = Sql.get().active_query
+        query_dict = dict()
+        query_dict["attributes"] = query.get_attributes()
+        query_dict["tables"] = query.get_tables()
+        query_dict["conditionals"] = query.get_conditionals()
+        query_dict["order"] = query.get_ordered_attributes()
+        query_dict["use_natural_join"] = query.use_natural_join.get()
+        file_name = asksaveasfilename(initialdir="./queries", defaultextension=".query", filetypes=[("Query file", "*.query")])
+        if not file_name.endswith(".query"):
+            file_name += ".query"
+        if file_name:
+            if os.path.isfile(file_name):
+                os.remove(file_name)
+            with open(file_name, "x") as file_handle:
+                json.dump(query_dict, file_handle, indent=4)
+
     def goto_prev(self):
-        self.root.pack("order_menu")
+        self.manager.pack("order_menu")

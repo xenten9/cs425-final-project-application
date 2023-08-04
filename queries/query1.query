@@ -1,0 +1,103 @@
+{
+    "attributes": {
+        "employee": [
+            "work_email"
+        ],
+        "person": [
+            "first_name",
+            "last_name"
+        ],
+        "realtor": [
+            "realtor_id"
+        ],
+        "residence": [
+            "date_of_purchase"
+        ]
+    },
+    "tables": [
+        "employee",
+        "person",
+        "realtor",
+        "residence"
+    ],
+    "conditionals": [
+        [
+            "employee.person_id",
+            "=",
+            "person.person_id",
+            "",
+            "AND"
+        ],
+        [
+            "realtor.employee_id",
+            "=",
+            "employee.employee_id",
+            "",
+            "AND"
+        ],
+        [
+            "residence.realtor_id",
+            "=",
+            "realtor.realtor_id",
+            "",
+            "AND"
+        ],
+        [
+            "residence.date_of_purchase",
+            ">=",
+            "custom",
+            "2023-1-1",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ]
+    ],
+    "order": [
+        "work_email",
+        "first_name",
+        "last_name",
+        "realtor_id",
+        "date_of_purchase"
+    ],
+    "use_natural_join": false
+}

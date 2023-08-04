@@ -1,0 +1,98 @@
+{
+    "attributes": {
+        "duplex": [
+            "duplex_id"
+        ],
+        "house": [
+            "air_conditioning",
+            "floor_count"
+        ],
+        "residence": [
+            "pets"
+        ]
+    },
+    "tables": [
+        "duplex",
+        "house",
+        "residence"
+    ],
+    "conditionals": [
+        [
+            "duplex.house_id",
+            "=",
+            "house.house_id",
+            "",
+            "AND"
+        ],
+        [
+            "house.residence_id",
+            "=",
+            "residence.residence_id",
+            "",
+            "AND"
+        ],
+        [
+            "house.air_conditioning",
+            "LIKE",
+            "custom",
+            "%central%",
+            "AND"
+        ],
+        [
+            "residence.pets",
+            "REGEXP",
+            "custom",
+            ".*(cat).*",
+            "AND"
+        ],
+        [
+            "house.floor_count",
+            "<=",
+            "custom",
+            "2",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ]
+    ],
+    "order": [
+        "duplex_id",
+        "air_conditioning",
+        "pets",
+        "floor_count"
+    ],
+    "use_natural_join": true
+}

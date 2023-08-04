@@ -1,0 +1,104 @@
+{
+    "attributes": {
+        "apartment_complex": [
+            "apartment_id",
+            "is_dorm"
+        ],
+        "apartment_suite": [
+            "suite_id"
+        ],
+        "client": [],
+        "person": [
+            "first_name",
+            "last_name"
+        ],
+        "residence": []
+    },
+    "tables": [
+        "apartment_complex",
+        "apartment_suite",
+        "client",
+        "person",
+        "residence"
+    ],
+    "conditionals": [
+        [
+            "apartment_complex.is_dorm",
+            "=",
+            "custom",
+            "1",
+            "AND"
+        ],
+        [
+            "apartment_complex.apartment_id",
+            "=",
+            "apartment_suite.apartment_id",
+            "",
+            "AND"
+        ],
+        [
+            "apartment_suite.residence_id",
+            "=",
+            "residence.residence_id",
+            "",
+            "AND"
+        ],
+        [
+            "residence.person_id",
+            "=",
+            "client.person_id",
+            "",
+            "AND"
+        ],
+        [
+            "client.person_id",
+            "=",
+            "person.person_id",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ],
+        [
+            "",
+            "=",
+            "",
+            "",
+            ""
+        ]
+    ],
+    "order": [
+        "first_name",
+        "last_name",
+        "suite_id",
+        "apartment_id",
+        "is_dorm"
+    ],
+    "use_natural_join": false
+}

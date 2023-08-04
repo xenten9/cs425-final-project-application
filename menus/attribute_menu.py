@@ -8,9 +8,9 @@ from tk_manager import TkManager
 
 
 class AttributeMenu(tk.Frame):
-    def __init__(self, root: TkManager, *args, **kwargs) -> None:
-        super().__init__(root.root, *args, **kwargs)
-        self.manager = root
+    def __init__(self, manager: TkManager, *args, **kwargs) -> None:
+        super().__init__(manager.root, *args, **kwargs)
+        self.manager = manager
 
     def create(self):
         query = Sql.get().get_active_query()
@@ -130,21 +130,30 @@ class AttributeMenu(tk.Frame):
             )
         )
 
-    def goto_next(self):
+    def goto_next(self) -> ConditionalMenu:
         query = Sql.get().get_active_query()
         manager = self.manager
         attributes = query.get_attributes()
 
         # Select at least one attribute
         if sum([len(attribute_list) for attribute_list in attributes.values()]) == 0:
-            popup.showinfo("ERROR", "Query must have at least one attribute")
+            popup.showinfo("ERROR", "Query must have at least one attribute!")
             return
+
+        if not query.use_natural_join.get():
+            for i, table_1 in enumerate(attributes.values()):
+                for table_2 in list(attributes.values())[i+1:]:
+                    for attribute in table_1:
+                        if attribute in table_2:
+                            popup.showinfo("ERROR", "Duplicate query field names not allowed unless natural joining!")
+                            return
 
         # Make room for new conditional menu
         manager.destroy_frame("conditional_menu")
-        conditional_creator = ConditionalMenu(manager)
-        conditional_creator.create()
+        menu = ConditionalMenu(manager)
+        menu.create()
         manager.pack("conditional_menu")
+        return menu
 
     def goto_prev(self):
         self.manager.pack("table_menu")

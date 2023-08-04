@@ -17,6 +17,7 @@ PACK_TOP = {"side": "top"}
 PACK_BOTTOM = {"side": "bottom"}
 PACK_LEFT = {"side": "left"}
 PACK_RIGHT = {"side": "right"}
+PACK_CENTER = {"anchor": "center"}
 
 FONT_SMALL = {"font": ("arial", 18)}
 FONT_MEDIUM = {"font": ("arial", 24)}

@@ -41,6 +41,8 @@ class ConditionalMenu(tk.Frame):
         available_operators = ["=", "!=", "<", "<=", ">", ">=", "LIKE", "REGEXP"]
         available_joins = ["", "OR", "AND"]
 
+        query.conditional_vars.clear()
+
         for i in range(10):
             operand_1 = tk.StringVar(value="")
             operator = tk.StringVar(value="=")
@@ -119,13 +121,15 @@ class ConditionalMenu(tk.Frame):
             **FONT_MEDIUM,
         ).grid(row=0, column=0, **{**GRID_FILL_X, **SMALL_PAD})
 
-    def goto_next(self):
+    def goto_next(self) -> OrderMenu:
         root = self.root
 
         root.destroy_frame("order_menu")
-        order_menu = OrderMenu(root)
-        order_menu.create()
+        menu = OrderMenu(root)
+        menu.create()
         root.pack("order_menu")
+
+        return menu
 
     def goto_prev(self):
         self.root.pack("attribute_menu")

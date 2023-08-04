@@ -84,13 +84,14 @@ class OrderMenu(tk.Frame):
             **FONT_MEDIUM,
         ).grid(row=0, column=0, **{**GRID_FILL_X, **SMALL_PAD})
 
-    def goto_next(self):
+    def goto_next(self) -> ResultsMenu:
         Sql.get().query()
 
         self.root.destroy_frame("results_menu")
-        results_menu = ResultsMenu(self.root)
-        results_menu.create()
+        menu = ResultsMenu(self.root)
+        menu.create()
         self.root.pack("results_menu")
+        return menu
 
     def goto_prev(self):
         self.root.pack("conditional_menu")

@@ -125,8 +125,25 @@ class Sql:
         tables = query.get_tables()
         conditionals = query.get_conditionals()
         command = ""
-        command += f"SELECT {', '.join(attributes)}\n"
-        command += f"FROM {' NATURAL JOIN '.join(tables)}"
+        if query.use_natural_join.get():
+            command += f"SELECT {', '.join(attributes)}\n"
+            command += f"FROM {' NATURAL JOIN '.join(tables)}"
+        else:
+            for i, attribute in enumerate(attributes):
+                table = next(
+                    filter(
+                        lambda x: x,
+                        [
+                            table if attribute in self.table_attributes[table] else None
+                            for table in tables
+                        ],
+                    )
+                )
+
+                attributes[i] = f"{table}.{attribute}"
+
+            command += f"SELECT {', '.join(attributes)}\n"
+            command += f"FROM {', '.join(tables)}"
 
         arguments = []
 

@@ -1,6 +1,6 @@
 # cs425-final-project-application
 
-The final project for our CS425 class at IIT.
+The final project for our CS425 class at IIT (see [Associated GitHub Repo](https://github.com/xenten9/cs425-final-project-application)).  
 
 ## How to run main.py
 

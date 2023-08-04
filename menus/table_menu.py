@@ -35,6 +35,12 @@ class TableMenu(tk.Frame):
                 **FONT_SMALL,
             )
             checkbox.grid(row=row, column=0, **GRID_ALIGN_LEFT)
+        tk.Button(
+            check_boxes_frame,
+            text="Reset selection",
+            command=lambda: [var.set(0) for var in query.table_vars.values()],
+            **{**FONT_MEDIUM},
+        ).grid(row=row+1, column=0, **GRID_ALIGN_LEFT)
 
         # Use natural joins?
         bool_var = query.use_natural_join
@@ -44,17 +50,11 @@ class TableMenu(tk.Frame):
             text="Use natural join?",
             **FONT_SMALL,
         )
-        checkbox.grid(row=row, column=0, **GRID_ALIGN_LEFT)
+        checkbox.grid(row=row+2, column=0, **GRID_ALIGN_LEFT)
 
         # Main menu span
         span_frame = tk.Frame(self, bg="black")
         widgets: list[tk.Widget] = [
-            tk.Button(
-                span_frame,
-                text="Reset selection",
-                command=lambda: [var.set(0) for var in query.table_vars.values()],
-                **{**FONT_MEDIUM},
-            ),
             tk.Button(span_frame, text="Go back", command=self.goto_prev, **{**FONT_MEDIUM}),
             tk.Button(span_frame, text="Proceed", command=self.goto_next, **{**FONT_MEDIUM}),
         ]
@@ -67,7 +67,7 @@ class TableMenu(tk.Frame):
         span_frame.pack(**{**PACK_FILL_X, **PACK_BOTTOM})
         check_boxes_frame.pack(**{**PACK_TOP, **PACK_FILL_BOTH})
 
-    def goto_next(self):
+    def goto_next(self) -> AttributeMenu:
         query = Sql.get().get_active_query()
         tables = query.get_tables()
 
@@ -98,9 +98,10 @@ class TableMenu(tk.Frame):
                 return
 
         self.manager.destroy_frame("attribute_menu")
-        attribute_table = AttributeMenu(self.manager)
-        attribute_table.create()
+        menu = AttributeMenu(self.manager)
+        menu.create()
         self.manager.pack("attribute_menu")
+        return menu
 
     def goto_prev(self):
         self.manager.pack("main_menu")

@@ -8,7 +8,7 @@ from tk_manager import TkManager
 
 ROOT = tk.Tk()
 
-ttk.Style().configure("font_small.TCheckbutton", **FONT_SMALL)
+ttk.Style().configure("font_small.TCheckbutton", **{**FONT_SMALL})
 
 
 def main():
@@ -27,7 +27,7 @@ def main():
 
     main_menu = MainMenu(manager)
     main_menu.create()
-    manager.pack("main_menu")  # Default menu
+    manager.pack("main_menu")
     ROOT.mainloop()
 
 

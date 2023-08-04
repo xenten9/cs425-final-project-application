@@ -19,32 +19,32 @@ class AttributeMenu(tk.Frame):
         self.manager.create_frame("attribute_menu", self)
 
         # Title
-        tk.Label(self, text="Select attributes to return", **FONT_MEDIUM).pack(
+        tk.Label(self, text="Select attributes to return", bg="#FFD" , **FONT_MEDIUM_BOLD).pack(
             **{**PACK_FILL_X, **PACK_TOP}
         )
 
         # Bottom menu buttons
-        frame = tk.Frame(self, bg="yellow")
+        frame = tk.Frame(self, bg="#000")
         frame.pack(**{**PACK_FILL_X, **PACK_BOTTOM})
         frame.columnconfigure(0, weight=1)
         tk.Button(
             frame,
             text="Go back",
             command=self.goto_prev,
-            **FONT_MEDIUM,
-        ).grid(row=0, column=0, **GRID_FILL_X)
+            **{**FONT_MEDIUM}
+        ).grid(row=0, column=0, **{**GRID_FILL_X, **SMALL_PAD})
         frame.columnconfigure(1, weight=1)
         tk.Button(
             frame,
             text="Proceed",
             command=self.goto_next,
-            **FONT_MEDIUM,
-        ).grid(row=0, column=1, **GRID_FILL_X)
+            **{**FONT_MEDIUM},
+        ).grid(row=0, column=1, **{**GRID_FILL_X, **SMALL_PAD})
 
         # Lists frame
-        canvas = tk.Canvas(self, bg="green")
+        canvas = tk.Canvas(self)
         canvas.pack(expand=True, **PACK_FILL_BOTH)
-        canvas_frame = tk.Frame(canvas, bg="red", **HIGHLIGHT_1PT_BLACK)
+        canvas_frame = tk.Frame(canvas, **HIGHLIGHT_1PT_BLACK)
         canvas.create_window(0, 0, window=canvas_frame, anchor="nw", width=50000)
         canvas.bind(
             "<Configure>",
@@ -60,7 +60,7 @@ class AttributeMenu(tk.Frame):
         query.update_attributes()
 
         for table in tables:
-            list_frame = tk.Frame(canvas_frame, bg=f"#00F")
+            list_frame = tk.Frame(canvas_frame)
 
             list_frame.pack(**{**PACK_LEFT, **PACK_FILL_Y})
 
@@ -73,6 +73,7 @@ class AttributeMenu(tk.Frame):
                     attribute.set(False)
                     for attribute in query.attribute_vars[table].values()
                 ],
+                bg="#FDD",
                 **FONT_SMALL,
             ).pack(**{**PACK_FILL_X, **PACK_BOTTOM})
             tk.Button(
@@ -82,6 +83,7 @@ class AttributeMenu(tk.Frame):
                     attribute.set(True)
                     for attribute in query.attribute_vars[table].values()
                 ],
+                bg="#DFD",
                 **FONT_SMALL,
             ).pack(**{**PACK_FILL_X, **PACK_BOTTOM})
             buttons_frame.pack(**{**PACK_BOTTOM, **PACK_FILL_X})

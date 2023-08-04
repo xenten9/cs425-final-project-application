@@ -19,7 +19,7 @@ class TableMenu(tk.Frame):
         self.manager.create_frame("table_menu", self, kwargs={"bg": "#B22"})
 
         # Title
-        tk.Label(self, text="Select tables to query", **FONT_MEDIUM).pack(
+        tk.Label(self, text="Select tables to query", bg="#FFD", **FONT_MEDIUM_BOLD).pack(
             **{**PACK_FILL_X, **PACK_TOP}
         )
 
@@ -47,20 +47,20 @@ class TableMenu(tk.Frame):
         checkbox.grid(row=row, column=0, **GRID_ALIGN_LEFT)
 
         # Main menu span
-        span_frame = tk.Frame(self)
+        span_frame = tk.Frame(self, bg="black")
         widgets: list[tk.Widget] = [
             tk.Button(
                 span_frame,
                 text="Reset selection",
                 command=lambda: [var.set(0) for var in query.table_vars.values()],
-                **FONT_SMALL,
+                **{**FONT_MEDIUM},
             ),
-            tk.Button(span_frame, text="Go back", command=self.goto_prev, **FONT_SMALL),
-            tk.Button(span_frame, text="Proceed", command=self.goto_next, **FONT_SMALL),
+            tk.Button(span_frame, text="Go back", command=self.goto_prev, **{**FONT_MEDIUM}),
+            tk.Button(span_frame, text="Proceed", command=self.goto_next, **{**FONT_MEDIUM}),
         ]
 
         for i, widget in enumerate(widgets):
-            widget.grid(row=0, column=i, **GRID_FILL_BOTH)
+            widget.grid(row=0, column=i, **{**GRID_FILL_BOTH, **SMALL_PAD})
             span_frame.grid_columnconfigure(i, weight=1)
 
         # Pack frames

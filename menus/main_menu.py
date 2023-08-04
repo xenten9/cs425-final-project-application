@@ -15,19 +15,13 @@ class MainMenu(tk.Frame):
 
         # Title
         tk.Label(
-            self, text="Matthew Family Real Estate Portal", **FONT_LARGE_BOLD
+            self, text="Matthew Family Real Estate Portal", **FONT_LARGE_BOLD, bg="#CFC"
         ).pack(**{**PACK_FILL_X, **PACK_TOP})
 
         # Main menu span
-        span_frame = tk.Frame(self)
-        widgets: list[tk.Widget] = [
-            # tk.Button(span_frame, text="Go back", command=self.goto_prev, **FONT_SMALL),
-            tk.Button(span_frame, text="Proceed", command=self.goto_next, **FONT_SMALL),
-        ]
-
-        for i, widget in enumerate(widgets):
-            widget.grid(row=0, column=i, **GRID_FILL_BOTH)
-            span_frame.grid_columnconfigure(i, weight=1)
+        span_frame = tk.Frame(self, bg="black")
+        tk.Button(span_frame, text="Proceed", command=self.goto_next, **FONT_MEDIUM).grid(row=0, column=0, **{**GRID_FILL_BOTH, **SMALL_PAD})
+        span_frame.columnconfigure(0, weight=1)
 
         # Pack frames
         span_frame.pack(**{**PACK_FILL_X, **PACK_BOTTOM})

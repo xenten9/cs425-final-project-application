@@ -1,5 +1,4 @@
 import tkinter as tk
-import tkinter.messagebox as popup
 
 from constants import *
 from menus.results_menu import ResultsMenu
@@ -20,7 +19,7 @@ class OrderMenu(tk.Frame):
         self.root.create_frame("order_menu", self)
 
         # Title
-        tk.Label(self, text="Order Attributes", **FONT_MEDIUM).pack(
+        tk.Label(self, text="Order Attributes", bg="#FFD" , **FONT_MEDIUM_BOLD).pack(
             **{**PACK_FILL_X, **PACK_TOP}
         )
 
@@ -68,7 +67,7 @@ class OrderMenu(tk.Frame):
         form_attribute_ordering(self).pack(**PACK_FILL_Y)
 
         # Proceed button
-        button_frame = tk.Frame(self)
+        button_frame = tk.Frame(self, bg="black")
         button_frame.pack(**{**PACK_FILL_X, **PACK_BOTTOM})
         button_frame.columnconfigure(0, weight=1)
         button_frame.columnconfigure(1, weight=1)
@@ -77,17 +76,15 @@ class OrderMenu(tk.Frame):
             text="Proceed",
             command=self.goto_next,
             **FONT_MEDIUM,
-        ).grid(row=0, column=1, **{**GRID_FILL_X})
+        ).grid(row=0, column=1, **{**GRID_FILL_X, **SMALL_PAD})
         tk.Button(
             button_frame,
             text="Go back",
             command=self.goto_prev,
             **FONT_MEDIUM,
-        ).grid(row=0, column=0, **{**GRID_FILL_X})
+        ).grid(row=0, column=0, **{**GRID_FILL_X, **SMALL_PAD})
 
     def goto_next(self):
-        attributes = Sql.get().get_active_query().get_attributes()
-
         Sql.get().query()
 
         self.root.destroy_frame("results_menu")

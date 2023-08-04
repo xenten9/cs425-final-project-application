@@ -3,7 +3,7 @@ from decimal import Decimal
 import tkinter as tk
 
 from constants import *
-from sql import Sql, Query
+from sql import Sql
 from tk_manager import TkManager
 
 
@@ -19,16 +19,19 @@ class ResultsMenu(tk.Frame):
         self.root.create_frame("results_menu", self)
 
         # External UI
-        tk.Label(self, text="Results", **FONT_MEDIUM).pack(
+        tk.Label(self, text="Results", bg="#FFD", **FONT_MEDIUM_BOLD).pack(
             **{**PACK_TOP, **PACK_FILL_X}
         )
 
+        button_frame = tk.Frame(self)
+        button_frame.pack(**{**PACK_BOTTOM, **PACK_FILL_X})
+
         tk.Button(
-            self,
+            button_frame,
             text="Go back",
-            command=lambda query=query: self.goto_prev(query),
+            command=self.goto_prev,
             **FONT_MEDIUM,
-        ).pack(**{**PACK_BOTTOM, **PACK_FILL_X})
+        ).pack(**{**PACK_FILL_X, **SMALL_PAD})
 
         # Table for results
         frame_table_container = tk.Frame(self, bg="#228")
@@ -82,8 +85,8 @@ class ResultsMenu(tk.Frame):
         canvas.update()
         canvas.config(scrollregion=canvas.bbox(tk.ALL))
 
-    def goto_next(self, query: Query):
+    def goto_next(self):
         pass
 
-    def goto_prev(self, query: Query):
+    def goto_prev(self):
         self.root.pack("order_menu")

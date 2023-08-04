@@ -19,12 +19,12 @@ class ConditionalMenu(tk.Frame):
         self.root.create_frame("conditional_menu", self)
 
         # Title
-        tk.Label(self, text="Form conditionals", **FONT_MEDIUM).pack(
+        tk.Label(self, text="Form conditionals", bg="#FFD", **FONT_MEDIUM_BOLD).pack(
             **{**PACK_FILL_X, **PACK_TOP}
         )
 
         # Conditonal creation grid
-        conditional_grid = tk.Frame(self, bg="pink")
+        conditional_grid = tk.Frame(self)
 
         for i in range(5):
             conditional_grid.grid_columnconfigure(i, weight=1)
@@ -102,7 +102,7 @@ class ConditionalMenu(tk.Frame):
         conditional_grid.pack(**{**PACK_FILL_BOTH, **PACK_TOP})
 
         # Proceed button
-        button_frame = tk.Frame(self)
+        button_frame = tk.Frame(self, bg="black")
         button_frame.pack(**{**PACK_FILL_X, **PACK_BOTTOM})
         button_frame.columnconfigure(0, weight=1)
         button_frame.columnconfigure(1, weight=1)
@@ -111,13 +111,13 @@ class ConditionalMenu(tk.Frame):
             text="Proceed",
             command=self.goto_next,
             **FONT_MEDIUM,
-        ).grid(row=0, column=1, **{**GRID_FILL_X})
+        ).grid(row=0, column=1, **{**GRID_FILL_X, **SMALL_PAD})
         tk.Button(
             button_frame,
             text="Go back",
             command=self.goto_prev,
             **FONT_MEDIUM,
-        ).grid(row=0, column=0, **{**GRID_FILL_X})
+        ).grid(row=0, column=0, **{**GRID_FILL_X, **SMALL_PAD})
 
     def goto_next(self):
         root = self.root

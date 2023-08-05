@@ -1,12 +1,8 @@
 import json
-from time import sleep
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 
 from constants import *
-from menus.attribute_menu import AttributeMenu
-from menus.conditional_menu import ConditionalMenu
-from menus.results_menu import ResultsMenu
 from menus.table_menu import TableMenu
 from tk_manager import TkManager
 from sql import Sql
@@ -60,8 +56,7 @@ class MainMenu(tk.Frame):
             defaultextension=".query",
             filetypes=[("Query file", "*.query")],
         )
-        print(file_name)
-        # file = file_dialog.go("./queries", "*.query")
+        print(f"Opening {file_name}")
         if file_name:
             # Load file here
             contents: dict[

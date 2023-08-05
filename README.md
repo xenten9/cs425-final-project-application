@@ -36,3 +36,12 @@ py main.py
 
 Running ```./sql_test.py``` is straight forward and if you have questions for options run the file with the ```-h``` flag for help.
 
+## If you run into issues...
+
+1. Make sure all comamnds are being run in the windows command prompt and not the powershell
+2. Double check the commands are typed properly.
+3. If the gui section freezes on loading, it is probably waiting for you to enter the password in the terminal.
+4. Make sure that all programs neccesary such as python and mysql database are installed, functioning, and have the neccesary windows system path's configured.
+5. Try a solution based on what you are used to keeping in mind what the commands provided do, for example entering the mysql command prompt for database import could work better if you are more familiar.
+6. If all else fails, email me at ```jraynor@hawk.iit.edu```, I am open to arranging a meeting if that works best.
+

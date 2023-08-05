@@ -11,6 +11,19 @@ HELP = """
         IE: <--show 2,5,7> will show the second fifth and seventh commands.
 """
 
+PROMPTS = [
+    "List of Realtors who are clients",
+    "List of Houses with gas, pets, and water",
+    "List of houses with rent < 5,000 sorted descending in price",
+    "List of top 20 earning employees",
+    "List of Apartment complex with more than 30 apartments",
+    "List of Residential Homes in North Carolina ordered by expected price increasing",
+    "Name of person who owns a specific house",
+    "Find any times when a single family house Shares the house ID with a Duplex House",
+    "Employee with highest hours worked and their percent rank of hourly_rate",
+    "List the expected price of houses associated with home ownership association “New Leaf” and cheaper than the average expected price of all houses, and who owns them",
+]
+
 COMMANDS = [
     ##List of Realtors who are clients
     """
@@ -41,7 +54,7 @@ COMMANDS = [
     LIMIT 1000;
     """,
 
-    #List of top 20 earning employees
+    ##List of top 20 earning employees
     """
     SELECT employee_id, first_name, last_name, hourly_rate * hours_worked + commission as earnings
     FROM person, employee
@@ -66,7 +79,7 @@ COMMANDS = [
     ORDER BY expected_price ASC;
     """,
 
-    #Name of person who owns a specific house
+    ##Name of person who owns a specific house
     """
     SELECT first_name, last_name, residence_id, expected_price
     FROM person NATURAL JOIN residence
@@ -110,6 +123,7 @@ def main(limit: int, skip: list[int], show: list[int]):
             # Run sql command
             cursor.execute(command)
             print(f"{'-'*10} command {i + 1} {'-'*10}")
+            print(PROMPTS[i] + ":")
             print(command)
 
             if limit == -1: # No limit

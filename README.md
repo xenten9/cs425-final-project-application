@@ -2,6 +2,17 @@
 
 The final project for our CS425 class at IIT (see [Associated GitHub Repo](https://github.com/xenten9/cs425-final-project-application)).  
 
+## How to load database
+
+In order to load the database simply run the below command:
+
+```cmd
+mysql -u root -p matthew_family_realty < ./datafiles/database/dump.sql
+```
+
+and then enter the password to your local database when prompted.
+Furthermore your password must be stored in the ```./password``` file at the root of this project directory. Alternatively you can enter your pass word in the command prompy when asked; However, this can be finnicky.
+
 ## How to run main.py
 
 First in the main director which this md file is located create a file  ```./password``` with no file extension.

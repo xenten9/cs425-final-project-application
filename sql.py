@@ -1,4 +1,5 @@
 from __future__ import annotations
+import getpass
 
 import pymysql
 import tkinter.messagebox as popup
@@ -77,9 +78,11 @@ class Sql:
         self._results = None
 
         # Access database
-        file = open("./password")
-        password = file.read()
-        file.close()
+        try:
+            with open("./password") as file:
+                password = file.read()
+        except FileNotFoundError:
+            password = getpass.getpass("Password: ")
 
         # Use database
         self.connection = pymysql.connect(

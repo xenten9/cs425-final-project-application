@@ -35,7 +35,6 @@ COMMANDS = [
     AND employee.person_id = client.person_id
     AND employee.person_id = person.person_id;
     """,
-
     ##List of Houses with gas, pets, and water
     """
     SELECT house_id, has_gas, pets, utilities
@@ -45,7 +44,6 @@ COMMANDS = [
     AND utilities LIKE "%W%"
     AND house.residence_id = residence.residence_id;
     """,
-
     ##List of houses with rent < 5,000 sorted descending in price
     """
     SELECT house_id, expected_rent
@@ -55,7 +53,6 @@ COMMANDS = [
     ORDER BY expected_rent DESC
     LIMIT 1000;
     """,
-
     ##List of top 20 earning employees
     """
     SELECT employee_id, first_name, last_name, hourly_rate * hours_worked + commission as earnings
@@ -64,7 +61,6 @@ COMMANDS = [
     ORDER BY earnings
     LIMIT 20;
     """,
-
     ##List of Apartment complex with more than 30 apartments
     """
     SELECT apartment_id, COUNT(suite_id)
@@ -72,7 +68,6 @@ COMMANDS = [
     GROUP BY apartment_id
     HAVING COUNT(suite_id) > 30;
     """,
-
     ##List of Residential Homes in North Carolina ordered by expected price increasing
     """
     SELECT residence_id, expected_price, state
@@ -80,21 +75,18 @@ COMMANDS = [
     WHERE state LIKE "Nor%Car%"
     ORDER BY expected_price ASC;
     """,
-
     ##Name of person who owns a specific house
     """
     SELECT first_name, last_name, residence_id, expected_price
     FROM person NATURAL JOIN residence
     WHERE first_name LIKE "M%s";
     """,
-
-    #Find any times when a single family house Shares the house ID with a Duplex House
+    # Find any times when a single family house Shares the house ID with a Duplex House
     """
     SELECT *
     FROM single_family_house NATURAL JOIN duplex;
     """,
-
-    #Employee with highest hours worked and their percent rank of hourly_rate
+    # Employee with highest hours worked and their percent rank of hourly_rate
     """
     WITH fancy_percent AS (
         SELECT employee_id, ROUND(PERCENT_RANK() OVER (ORDER BY hourly_rate) * 100, 2) as percentage_rank
@@ -106,8 +98,7 @@ COMMANDS = [
         SELECT hours_worked FROM employee
     );
     """,
-
-    #List the expected price of houses associated with home ownership association “New Leaf” and cheaper than the average expected price of all houses, and who owns them
+    # List the expected price of houses associated with home ownership association “New Leaf” and cheaper than the average expected price of all houses, and who owns them
     """
     SELECT house_id, expected_price, house_ownership_association
     FROM house NATURAL JOIN residence
@@ -121,25 +112,27 @@ def main(limit: int, skip: list[int], show: list[int]):
     cursor = Sql.get().cursor
 
     for i, command in enumerate(COMMANDS):
-        if i + 1 in show and i + 1 not in skip: # Check for skipping and showing
+        if i + 1 in show and i + 1 not in skip:  # Check for skipping and showing
             # Run sql command
             cursor.execute(command)
             print(f"{'-'*10} command {i + 1} {'-'*10}")
             print(PROMPTS[i] + ":")
             print(command)
 
-            if limit == -1: # No limit
+            if limit == -1:  # No limit
                 result = cursor.fetchall()
-            else: # Limit
+            else:  # Limit
                 result = cursor.fetchmany(min(limit, cursor.rowcount))
 
             # Print results
-            table: prettytable.PrettyTable = prettytable.PrettyTable([field[0] for field in cursor.description])
+            table: prettytable.PrettyTable = prettytable.PrettyTable(
+                [field[0] for field in cursor.description]
+            )
             for row in result:
                 table.add_row(row)
 
             print(table)
-            
+
             print("\n")
 
 

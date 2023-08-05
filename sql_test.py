@@ -1,4 +1,6 @@
 import sys
+import prettytable
+
 from sql import Sql
 
 HELP = """
@@ -73,7 +75,7 @@ COMMANDS = [
 
     ##List of Residential Homes in North Carolina ordered by expected price increasing
     """
-    SELECT *
+    SELECT residence_id, expected_price, state
     FROM Residence
     WHERE state LIKE "Nor%Car%"
     ORDER BY expected_price ASC;
@@ -132,8 +134,11 @@ def main(limit: int, skip: list[int], show: list[int]):
                 result = cursor.fetchmany(min(limit, cursor.rowcount))
 
             # Print results
+            table: prettytable.PrettyTable = prettytable.PrettyTable([field[0] for field in cursor.description])
             for row in result:
-                print(row)
+                table.add_row(row)
+
+            print(table)
             
             print("\n")
 
